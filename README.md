@@ -1,2 +1,2 @@
 # Data-Mining-Student-Performance-23
-FIle sementara, masih dalam perbaikan
+FIle sementara, untuk kedepanaya masih akan ada perubahan yang dilakukan
