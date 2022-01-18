@@ -1,40 +1,60 @@
 import numpy as np
 import pandas as pd
-from sklearn.impute import SimpleImputer
-imputer = SimpleImputer(missing_values=np.nan, strategy='mean')
-from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+
+#medu = waktu belajar
+#nilai_tes = hasil ujian
+data = { 
+    'sex': ['wanita', 'wanita', 'wanita', 'wanita', 'pria',' pria'],
+    'age' : [18, 17, 15, 15,16, 16],
+    'medu': [4, 3.5, 1, 2, 3, 1.5],
+    'nilai_tes': [8, 8, 5, 5, 7, 6],
+    'hasil' : ['lulus', 'lulus', 'tidak lulus', 'tidak lulus', 'lulus', 'tidak lulus']
+}
+data_df = pd.DataFrame(data)
+print(data_df)
+
+#visualisasi Model
+fig, ax = plt.subplots()
+for hasil, d in data_df.groupby('hasil') :
+    ax.scatter( d['medu'],d['nilai_tes'], label = hasil)
+
+plt.legend(loc='upper left')
+plt. title('sebaran data')
+plt.xlabel('Waktu belajar')
+plt.ylabel('Hasil nilai Ujian')
+plt.grid(True)
+plt.show()
+
+#Preprocessing dataset 
+x_train = np.array(data_df[['medu','nilai_tes']])
+y_train = np.array(data_df['hasil'])
+
+print(f'x_train:\n{x_train}\n')
+print(f'y_train: {y_train}')
+
+from sklearn.preprocessing import LabelBinarizer, label_binarize
+lb = LabelBinarizer()
+y_train = lb.fit_transform(y_train)
+print(f'y_train: {y_train}')
+
+y_train = y_train.flatten()
+print(f'y_train: {y_train}')
+
+#training KNN Model
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score
-import sklearn.metrics
+K = 3
+model = KNeighborsClassifier(n_neighbors=K)
+model.fit(x_train,y_train)
 
-df = pd.read_csv(r'''D:\RAPHAEL\semester 7\machine learning\Data-Mining-Student-Performance-master\Data-Mining-Student-Performance-master\datat.csv''')
-df['sex'] = df['sex'].map({'M': 0, 'F': 1})
-df['address'] = df['address'].map({'U': 0, 'R': 1})
-df['guardian'] = df['guardian'].map({'mother': 0, 'father': 1})
-#df['internet'] = df['internet'].map({'no': 0, 'yes': 1})
+#prediksi kelulusan
+medu = 3
+nilai_tes = 8
+x_new = np.array([medu, nilai_tes]).reshape(1, -1)
+print(f'x_new: {x_new}')
 
+y_new = model.predict(x_new)
+print(f'y_new: {y_new}')
 
-predictors = df.values[:, 0:11]
-targets = df.values[:,12]
-
-pred_train, pred_test, tar_train, tar_test = train_test_split(predictors, targets, test_size= 0.25)
-
-
-print(pred_train.shape)
-print(pred_test.shape)
-print(tar_train.shape)
-print(tar_test.shape)
-
-neigh = KNeighborsClassifier(n_neighbors = 1, weights='uniform', algorithm='auto')
-neigh.fit(pred_train, tar_train)
-y_pred = neigh.predict(pred_test)
-
-
-#accuracy
-print("Accuracy is ", accuracy_score(tar_test, y_pred, normalize = True))
-#classification error
-print("Classification error is",1- accuracy_score(tar_test, y_pred, normalize = True))
-#sensitivity
-print("sensitivity is", sklearn.metrics.recall_score(tar_test, y_pred, labels=None, average =  'micro', sample_weight=None))
-#specificity
-print("specificity is", 1 - sklearn.metrics.recall_score(tar_test, y_pred,labels=None, average =  'micro', sample_weight=None))
+y_new = lb.inverse_transform(y_new)
+print(f'y_new: {y_new}')
